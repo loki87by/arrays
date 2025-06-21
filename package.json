@@ -1,0 +1,29 @@
+{
+  "name": "arrays",
+  "version": "1.0.0",
+  "description": "library for automatic works with arrays",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/loki87by/arrays.git"
+  },
+  "keywords": [
+    "arrays",
+    "tools",
+    "utils"
+  ],
+  "author": "Alexey Akulich (@loki87by)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/loki87by/arrays/issues"
+  },
+  "homepage": "https://github.com/loki87by/arrays#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.27.2",
+    "@babel/core": "^7.27.4",
+    "@babel/preset-env": "^7.27.2"
+  }
+}
