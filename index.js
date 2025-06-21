@@ -71,4 +71,20 @@ export const repeater = (array1, array2, config = C.REPEATER_CONFIG) => {
       }
     });
   });
+  return duplicatesArray;
+};
+
+export const sortDeepDates = (array, path, reverse) => {
+  return array.sort((a, b) => {
+    const aValue = path.split(".").reduce((o, k) => o?.[k], a);
+    const bValue = path.split(".").reduce((o, k) => o?.[k], b);
+
+    if (Date.parse(new Date(aValue)) > Date.parse(new Date(bValue))) {
+      return reverse ? -1 : 1;
+    } else if (Date.parse(new Date(aValue)) < Date.parse(new Date(bValue))) {
+      return reverse ? 1 : -1;
+    } else {
+      return 0;
+    }
+  });
 };
