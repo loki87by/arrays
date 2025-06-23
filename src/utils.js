@@ -1,3 +1,8 @@
+const firstUpper = (text) => {
+  const letters = text.split('')
+  return [letters[0].toUpperCase(), ...letters.slice(1)].join('')
+}
+
 export function configurator(array, config) {
   let configuredArray = array.slice();
 
@@ -90,6 +95,35 @@ export function configurator(array, config) {
       });
     } 
   }
+
+  if (config.allToTypes) {
+    configuredArray = configuredArray.map(i => {
+        if (i instanceof Date) return 'Date'
+        if (i instanceof RegExp) return 'RegExp'
+        if (i instanceof Set) return 'Set'
+        if (i instanceof Map) return 'Map'
+        if (i instanceof WeakSet) return 'WeakSet'
+        if (i instanceof WeakMap) return 'WeakMap'
+        if (i instanceof ArrayBuffer) return 'ArrayBuffer'
+        if (ArrayBuffer.isView(i)) return 'TypedArray'
+        if (i instanceof Promise) return 'Promise'
+        if (i instanceof Error) return 'Error'
+        if (Array.isArray(i)) return 'Array'
+        if (typeof i === 'bigint') return 'BigInt'
+        if (typeof i === 'symbol') return 'Symbol'
+        if (["string", "boolean", "number", "function"].includes(typeof i)) {
+            if (i instanceof Function && i.constructor.name !== 'Function') {
+                return `${firstUpper(i.constructor.name)} (constructor)`
+            }
+            return firstUpper(typeof i)
+        }
+        if (i === null) return 'Null'
+        if (i === undefined) return 'Undefined'
+        if (i && typeof i.then === 'function' && typeof i.catch === 'function') return 'Promise'
+        if (i && Object.prototype.toString.call(i) === '[object Window]') return 'Window'
+        return `${firstUpper(i?.constructor?.name)} (constructor)` || 'Object'
+    })
+}
 
   if (config.callback && typeof config.callback === "function") {
     configuredArray = config.callback(configuredArray)

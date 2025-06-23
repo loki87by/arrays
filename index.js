@@ -88,3 +88,15 @@ export const sortDeepDates = (array, path, reverse) => {
     }
   });
 };
+
+export const countObject = (array, config = COUNTER_CONFIG) => {
+  let configuredArray = U.configurator(array, config);
+  return configuredArray.reduce((p, i) => {
+    if (p[i]) {
+      p[i] = 1;
+    } else {
+      p[i] += 1;
+    }
+    return p;
+  }, {});
+};
