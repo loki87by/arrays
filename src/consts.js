@@ -7,15 +7,44 @@ export const BASE_CONFIG = {
   stringToNumber: false,
   dateToNumber: null, // or object
   /* {
-  pre, // one of date to string (toLocaleString, toISOString, etc...)
+  pre, // object Setter
+        y, //year
+        yp, //year + iterator
+        m, //month
+        mp, //month + iterator
+        d, //date
+        dp, //date + iterator
+        c, //calendarDay
+        cp, //calendarDay + iterator
+        h, //hours,
+        hp, //hours, + iterator
+        mi, //minutes,
+        mip, //minutes,+ iterator
+        s, //seconds,
+        sp, //seconds,+ iterator
+        ms, //milliseconds,
+        msp, //milliseconds,+ iterator
+        ds, //toDateString
+        iso, //toISOString
+        js, //toJSON
+        lds, //toLocaleDateString
+        ls, //toLocaleString
+        lts, //toLocaleTimeString
+        ts, //toString
+        tts, //toTimeString
+        utc, //toUTCString
+
     p, //parse
     y, //year
     f, //fullYear
     m, //month
-    w, //week
     d, //date
     c, //calendarDay
-    r, //+replace(/\D/, '') || callback
+    h, //hours,
+    mi, //minutes,
+    s, //seconds,
+    ms, //milliseconds,
+    reg, //+replace(/\D/, '') || callback
   } */
   // ToDo: add handle date, regexp and other types
 };
