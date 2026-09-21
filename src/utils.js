@@ -1,11 +1,70 @@
+/**
+ * Делает первую букву строки заглавной.
+ *
+ * @param {string} text - Исходная строка.
+ * @returns {string} Строка с заглавной первой буквой.
+ *
+ * @example
+ * firstUpper("hello"); // "Hello"
+ */
 const firstUpper = (text) => {
   const letters = text.split("");
   return [letters[0].toUpperCase(), ...letters.slice(1)].join("");
 };
 
+/**
+ * Приводит массив к заданному виду согласно конфигурации.
+ *
+ * Работает по принципу «цепочки фильтров и преобразователей»: каждая опция
+ * конфига последовательно применяется к копии исходного массива. Порядок
+ * применения: skip-фильтры → преобразования типов → dateToNumber → allToTypes → callback.
+ *
+ * @param {Array} array - Исходный массив (не мутируется, создаётся копия).
+ * @param {Object} config - Конфигурация преобразований.
+ * @param {boolean|Function} [config.skipUndefined] - Удаляет `undefined`.
+ *   Если `true` — просто фильтрует; если функция — вызывается с `undefined`
+ *   и результат приводится к boolean (true — оставить).
+ * @param {boolean|Function} [config.skipNull] - Удаляет `null`.
+ *   Если `true` — просто фильтрует; если функция — вызывается с `null`.
+ * @param {boolean|Function} [config.skipNaN] - Удаляет `NaN`.
+ *   Если `true` — использует `isNaN`; если функция — вызывается со значением,
+ *   для которого `isNaN` вернул true.
+ * @param {boolean|Function} [config.skipInfinity] - Удаляет `Infinity` / `-Infinity`.
+ *   Если функция — вызывается со значением, если оно `NaN` (⚠️ поведение как в оригинале).
+ * @param {boolean|Function} [config.booleanToNumber] - Преобразует `boolean` в `0`/`1`.
+ *   Если функция — вызывается с boolean-значением.
+ * @param {boolean|Function} [config.stringToNumber] - Преобразует строки в числа.
+ *   При `true`: `+i`, если это валидное число, иначе `0`.
+ *   Если функция — вызывается со строкой.
+ * @param {Function|Object} [config.dateToNumber] - Преобразование `Date`.
+ *   - Если функция — вызывается с датой и её результат используется.
+ *   - Если объект:
+ *     - `pre` — объект с опциями предобработки даты перед извлечением
+ *       (y, yp, m, mp, d, dp, c, cp, h, hp, mi, mip, s, sp, ms, msp — установка/прибавление,
+ *        ds, iso, js, lds, ls, lts, ts, tts, utc — строковые представления).
+ *     - `reg` — функция или RegExp/строка; применяется к результату как замена.
+ *     - иначе — набор ключей для извлечения части даты
+ *       (p — timestamp, y — двузначный год, f — полный год, m — месяц, d — день,
+ *        c — день недели, h — часы, mi — минуты, s — секунды, ms — миллисекунды).
+ * @param {boolean} [config.allToTypes] - Заменяет каждый элемент строкой с именем его типа
+ *   (Date, RegExp, Set, Map, WeakSet, WeakMap, ArrayBuffer, TypedArray, Promise, Error,
+ *    Array, BigInt, Symbol, String, Boolean, Number, Function, Null, Undefined, Window
+ *    или "<Constructor> (constructor)").
+ * @param {Function} [config.callback] - Финальный преобразователь массива:
+ *   получает уже сконфигурированный массив и возвращает новый.
+ * @returns {Array} Новый сконфигурированный массив.
+ *
+ * @example
+ * configurator([1, undefined, 2], { skipUndefined: true }); // [1, 2]
+ * configurator([true, false], { booleanToNumber: true });   // [1, 0]
+ * configurator(["1", "abc"], { stringToNumber: true });     // [1, 0]
+ * configurator([new Date()], { allToTypes: true });         // ["Date"]
+ */
 export function configurator(array, config) {
+  // Создаём копию, чтобы не мутировать исходный массив.
   let configuredArray = array.slice();
 
+  // --- Фильтр: undefined ---
   if (config.skipUndefined) {
     if (typeof config.skipUndefined === "boolean") {
       configuredArray = configuredArray.filter((i) => i !== undefined);
@@ -19,6 +78,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Фильтр: null ---
   if (config.skipNull) {
     if (typeof config.skipNull === "boolean") {
       configuredArray = configuredArray.filter((i) => i !== null);
@@ -32,6 +92,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Фильтр: NaN ---
   if (config.skipNaN) {
     if (typeof config.skipNaN === "boolean") {
       configuredArray = configuredArray.filter((i) => !isNaN(i));
@@ -45,6 +106,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Фильтр: Infinity / -Infinity ---
   if (config.skipInfinity) {
     if (typeof config.skipInfinity === "boolean") {
       configuredArray = configuredArray.filter(
@@ -60,6 +122,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Преобразование: boolean → number ---
   if (config.booleanToNumber) {
     if (typeof config.booleanToNumber === "boolean") {
       configuredArray = configuredArray.map((i) => {
@@ -78,6 +141,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Преобразование: string → number ---
   if (config.stringToNumber) {
     if (typeof config.stringToNumber === "boolean") {
       configuredArray = configuredArray.map((i) => {
@@ -96,6 +160,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Преобразование: Date → number (или строка/часть даты) ---
   if (config.dateToNumber) {
     if (typeof config.dateToNumber === "function") {
       configuredArray = configuredArray.map((i) => {
@@ -105,12 +170,16 @@ export function configurator(array, config) {
         return i;
       });
     } else {
+      // Индексы элементов-дат, которые нужно преобразовать.
       const indexArray = configuredArray
         .map((i, ind) => (i instanceof Date ? ind : null))
         .filter((i) => !!i);
+
       configuredArray.forEach((i, ind) => {
         if (indexArray.includes(ind)) {
           if (config.dateToNumber.hasOwnProperty("pre")) {
+            // Предобработка даты: установка или прибавление компонентов,
+            // либо строковые представления.
             for ([key, val] of Object.entries(config.dateToNumber.pre)) {
               switch (key) {
                 case "y":
@@ -170,10 +239,11 @@ export function configurator(array, config) {
               }
             }
           } else {
+            // Извлечение одной из частей даты.
             for (key of Object.keys(config.dateToNumber)) {
               switch (key) {
                 case "p":
-                  i = Date.parse(new Date(i));
+                  i = Date.parse(i);
                 case "y":
                   i = +`${new Date(i).getFullYear()}`.slice(2);
                 case "f":
@@ -190,8 +260,6 @@ export function configurator(array, config) {
                   i = new Date(i).getMinutes();
                 case "s":
                   i = new Date(i).getSeconds();
-                case "s":
-                  i = new Date(i).getSeconds();
                 case "ms":
                   i = new Date(i).getMilliseconds();
                 default:
@@ -199,9 +267,11 @@ export function configurator(array, config) {
               }
             }
           }
+
+          // Постобработка результата через reg (функция или RegExp/строка).
           if (config.dateToNumber.hasOwnProperty("reg")) {
             if (typeof config.dateToNumber.reg === "function") {
-              i === config.dateToNumber.reg(i);
+              i = config.dateToNumber.reg(i);
             } else if (
               config.dateToNumber.reg instanceof RegExp ||
               typeof config.dateToNumber.reg === "string"
@@ -214,6 +284,7 @@ export function configurator(array, config) {
     }
   }
 
+  // --- Преобразование: каждый элемент → строка с именем его типа ---
   if (config.allToTypes) {
     configuredArray = configuredArray.map((i) => {
       if (i instanceof Date) return "Date";
@@ -245,6 +316,7 @@ export function configurator(array, config) {
     });
   }
 
+  // --- Финальный пользовательский преобразователь ---
   if (config.callback && typeof config.callback === "function") {
     configuredArray = config.callback(configuredArray);
   }
